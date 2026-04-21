@@ -1,602 +1,869 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DESIGN.md - 设计系统规范</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1A1C1E',
-                        secondary: '#6C7278',
-                        tertiary: '#B8422E',
-                        neutral: '#F7F5F2',
-                        'on-tertiary': '#FFFFFF',
-                        'tertiary-container': '#D4654F',
-                    },
-                    fontFamily: {
-                        sans: ['Public Sans', 'system-ui', 'sans-serif'],
-                        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
-                    },
-                    borderRadius: {
-                        'sm': '4px',
-                        'md': '8px',
-                    },
-                    spacing: {
-                        'sm': '8px',
-                        'md': '16px',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Public Sans', system-ui, sans-serif;
-            background-color: #F7F5F2;
-            color: #1A1C1E;
-        }
-        .font-display {
-            font-family: 'Space Grotesk', system-ui, sans-serif;
-        }
-        .hero-gradient {
-            background: linear-gradient(135deg, #1A1C1E 0%, #2D3033 100%);
-        }
-        .token-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .token-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(26, 28, 30, 0.08);
-        }
-        .color-swatch {
-            box-shadow: inset 0 0 0 1px rgba(26, 28, 30, 0.06);
-        }
-        .section-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #6C7278, transparent);
-            opacity: 0.2;
-        }
-        code {
-            font-family: 'Space Grotesk', monospace;
-            font-size: 0.875rem;
-        }
-        .cli-command {
-            position: relative;
-            overflow: hidden;
-        }
-        .cli-command::before {
-            content: '$';
-            position: absolute;
-            left: 1rem;
-            color: #B8422E;
-            font-weight: 600;
-        }
-        .nav-link {
-            position: relative;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background-color: #B8422E;
-            transition: width 0.3s ease;
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DESIGN.md — 面向编码智能体的视觉识别格式规范</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#1A1C1E',
+            slate: '#6C7278',
+            terracotta: '#B8422E',
+            'terracotta-light': '#D4654E',
+            'terracotta-dark': '#8F3323',
+            limestone: '#F7F5F2',
+            'limestone-dark': '#EDEAE5',
+          },
+          fontFamily: {
+            sans: ['Public Sans', 'system-ui', 'sans-serif'],
+            grotesk: ['Space Grotesk', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    :root {
+      --ink: #1A1C1E;
+      --slate: #6C7278;
+      --terracotta: #B8422E;
+      --limestone: #F7F5F2;
+      --limestone-dark: #EDEAE5;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Public Sans', system-ui, sans-serif;
+      background: var(--limestone);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .grain-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.025;
+    }
+
+    .fade-in {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    .stagger-1 { transition-delay: 0.05s; }
+    .stagger-2 { transition-delay: 0.1s; }
+    .stagger-3 { transition-delay: 0.15s; }
+    .stagger-4 { transition-delay: 0.2s; }
+    .stagger-5 { transition-delay: 0.25s; }
+    .stagger-6 { transition-delay: 0.3s; }
+
+    code, pre {
+      font-family: 'Space Grotesk', 'Fira Code', monospace;
+    }
+
+    pre {
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--slate) transparent;
+    }
+
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: var(--slate); border-radius: 2px; }
+
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: ''; position: absolute; bottom: -2px; left: 0;
+      width: 0; height: 1.5px; background: var(--terracotta);
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    .token-card {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .token-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(26, 28, 30, 0.08);
+    }
+
+    .section-rule {
+      height: 1px;
+      background: linear-gradient(to right, var(--ink), transparent 80%);
+      opacity: 0.12;
+    }
+
+    .cli-step {
+      counter-increment: step;
+    }
+    .cli-step::before {
+      content: counter(step);
+      font-family: 'Space Grotesk', monospace;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: var(--terracotta);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border: 1.5px solid var(--terracotta);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .hover-row { transition: background 0.2s ease; }
+    .hover-row:hover { background: rgba(26, 28, 30, 0.02); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fade-in { opacity: 1; transform: none; transition: none; }
+      .token-card { transition: none; }
+      .token-card:hover { transform: none; }
+    }
+
+    .hero-pattern {
+      background-image:
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(184, 66, 46, 0.04), transparent),
+        radial-gradient(ellipse 40% 60% at 15% 70%, rgba(26, 28, 30, 0.03), transparent);
+    }
+  </style>
 </head>
-<body class="min-h-screen">
-    <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-neutral/95 backdrop-blur-sm border-b border-primary/5">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-primary rounded-sm flex items-center justify-center">
-                    <span class="text-neutral font-display font-bold text-sm">D</span>
-                </div>
-                <span class="font-display font-semibold text-lg tracking-tight">DESIGN.md</span>
-            </div>
-            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-secondary">
-                <a href="#overview" class="nav-link hover:text-primary transition-colors">概述</a>
-                <a href="#colors" class="nav-link hover:text-primary transition-colors">颜色</a>
-                <a href="#typography" class="nav-link hover:text-primary transition-colors">排版</a>
-                <a href="#tokens" class="nav-link hover:text-primary transition-colors">令牌</a>
-                <a href="#cli" class="nav-link hover:text-primary transition-colors">CLI</a>
-                <a href="https://github.com/google-labs-code/design.md/blob/main/docs/spec.md" target="_blank" rel="noopener noreferrer" class="nav-link hover:text-primary transition-colors">规范</a>
-            </div>
-            <a href="#start" class="hidden sm:inline-flex items-center gap-2 bg-tertiary text-on-tertiary px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-tertiary-container transition-colors">
-                快速开始
+<body>
+  <div class="grain-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 inset-x-0 z-50 bg-limestone/80 backdrop-blur-xl border-b border-ink/[0.06]">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-ink rounded flex items-center justify-center">
+          <span class="font-grotesk text-limestone text-xs font-bold">D</span>
+        </div>
+        <span class="font-grotesk font-semibold text-ink tracking-tight text-sm">DESIGN.md</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#overview" class="nav-link font-grotesk text-xs font-medium tracking-widest uppercase text-slate hover:text-ink transition-colors">概述</a>
+        <a href="#spec" class="nav-link font-grotesk text-xs font-medium tracking-widest uppercase text-slate hover:text-ink transition-colors">规范</a>
+        <a href="#tokens" class="nav-link font-grotesk text-xs font-medium tracking-widest uppercase text-slate hover:text-ink transition-colors">令牌</a>
+        <a href="#cli" class="nav-link font-grotesk text-xs font-medium tracking-widest uppercase text-slate hover:text-ink transition-colors">CLI</a>
+        <a href="#rules" class="nav-link font-grotesk text-xs font-medium tracking-widest uppercase text-slate hover:text-ink transition-colors">规则</a>
+      </div>
+      <a href="https://github.com/google-labs-code/design.md" target="_blank" rel="noopener"
+         class="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-ink text-limestone text-xs font-grotesk font-medium tracking-wide rounded hover:bg-ink/90 transition-colors active:scale-[0.98]">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-btn" class="md:hidden w-10 h-10 flex items-center justify-center text-ink">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" d="M4 8h16M4 16h16"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Mobile dropdown -->
+    <div id="mobile-menu" class="md:hidden hidden border-t border-ink/[0.06] bg-limestone/95 backdrop-blur-xl">
+      <div class="px-6 py-4 flex flex-col gap-3">
+        <a href="#overview" class="font-grotesk text-xs font-medium tracking-widest uppercase text-slate">概述</a>
+        <a href="#spec" class="font-grotesk text-xs font-medium tracking-widest uppercase text-slate">规范</a>
+        <a href="#tokens" class="font-grotesk text-xs font-medium tracking-widest uppercase text-slate">令牌</a>
+        <a href="#cli" class="font-grotesk text-xs font-medium tracking-widest uppercase text-slate">CLI</a>
+        <a href="#rules" class="font-grotesk text-xs font-medium tracking-widest uppercase text-slate">规则</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-pattern min-h-[100dvh] flex items-center pt-16">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12 w-full">
+      <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <!-- Left: Text -->
+        <div class="lg:col-span-7 space-y-8">
+          <div class="fade-in">
+            <span class="font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta">Google 开源项目 · Alpha</span>
+          </div>
+          <h1 class="fade-in stagger-1 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter leading-[0.95]">
+            面向编码智能体的<br/>
+            <span class="text-terracotta">视觉识别</span>格式
+          </h1>
+          <p class="fade-in stagger-2 text-lg sm:text-xl text-slate leading-relaxed max-w-[55ch]">
+            DESIGN.md 将机器可读的设计令牌与人类可读的设计原理相结合，为智能体提供持久化、结构化的设计系统理解。
+          </p>
+          <div class="fade-in stagger-3 flex flex-wrap gap-4">
+            <a href="#quickstart"
+               class="inline-flex items-center gap-2 px-7 py-3.5 bg-terracotta text-limestone font-grotesk text-sm font-semibold tracking-wide rounded hover:bg-terracotta-light transition-colors active:scale-[0.98]">
+              快速开始
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             </a>
+            <a href="#spec"
+               class="inline-flex items-center gap-2 px-7 py-3.5 border border-ink/15 text-ink font-grotesk text-sm font-medium tracking-wide rounded hover:border-ink/30 transition-colors active:scale-[0.98]">
+              阅读规范
+            </a>
+          </div>
+          <!-- Install snippet -->
+          <div class="fade-in stagger-4">
+            <div class="inline-flex items-center gap-3 bg-ink rounded-lg px-5 py-3 max-w-full overflow-hidden">
+              <span class="text-terracotta-light font-grotesk text-sm shrink-0">$</span>
+              <code class="text-limestone/90 text-sm truncate">npx @google/design.md lint DESIGN.md</code>
+              <button onclick="navigator.clipboard.writeText('npx @google/design.md lint DESIGN.md')" class="text-limestone/40 hover:text-limestone/80 transition-colors shrink-0" title="复制命令">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/></svg>
+              </button>
+            </div>
+          </div>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="hero-gradient text-neutral py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="max-w-3xl">
-                <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-sm mb-8">
-                    <span class="w-2 h-2 bg-tertiary rounded-full animate-pulse"></span>
-                    <span class="font-display text-xs font-medium tracking-wide uppercase">Alpha 版本</span>
-                </div>
-                <h1 class="text-4xl md:text-6xl font-semibold leading-tight mb-6 tracking-tight">
-                    一种用于向编码智能体<br>描述视觉识别的格式规范
-                </h1>
-                <p class="text-lg md:text-xl text-white/70 leading-relaxed mb-10 max-w-2xl">
-                    DESIGN.md 为智能体提供了一个持久化、结构化的设计系统理解。将机器可读的设计令牌与人类可读的设计原理相结合。
-                </p>
-                <div class="flex flex-wrap gap-4">
-                    <a href="#start" class="inline-flex items-center gap-2 bg-tertiary text-on-tertiary px-6 py-3.5 rounded-sm font-semibold hover:bg-tertiary-container transition-colors">
-                        开始使用
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                    </a>
-                    <a href="https://github.com/google-labs-code/design.md/blob/main/docs/spec.md" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-white/10 text-neutral px-6 py-3.5 rounded-sm font-semibold hover:bg-white/20 transition-colors backdrop-blur-sm">
-                        阅读规范
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    </a>
-                </div>
+        <!-- Right: Visual -->
+        <div class="lg:col-span-5 fade-in stagger-5">
+          <div class="relative">
+            <!-- Code preview card -->
+            <div class="bg-ink rounded-2xl overflow-hidden shadow-2xl shadow-ink/20">
+              <div class="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06]">
+                <div class="w-3 h-3 rounded-full bg-terracotta/60"></div>
+                <div class="w-3 h-3 rounded-full bg-slate/30"></div>
+                <div class="w-3 h-3 rounded-full bg-slate/30"></div>
+                <span class="ml-3 font-grotesk text-xs text-slate/50">DESIGN.md</span>
+              </div>
+              <pre class="p-5 text-sm leading-relaxed"><code><span class="text-slate/40">---</span>
+<span class="text-terracotta-light">name</span><span class="text-slate">:</span> <span class="text-limestone/80">Heritage</span>
+<span class="text-terracotta-light">colors</span><span class="text-slate">:</span>
+  <span class="text-limestone/60">primary</span><span class="text-slate">:</span> <span class="text-limestone/80">"#1A1C1E"</span>
+  <span class="text-limestone/60">secondary</span><span class="text-slate">:</span> <span class="text-limestone/80">"#6C7278"</span>
+  <span class="text-limestone/60">tertiary</span><span class="text-slate">:</span> <span class="text-limestone/80">"#B8422E"</span>
+  <span class="text-limestone/60">neutral</span><span class="text-slate">:</span> <span class="text-limestone/80">"#F7F5F2"</span>
+<span class="text-terracotta-light">typography</span><span class="text-slate">:</span>
+  <span class="text-limestone/60">h1</span><span class="text-slate">:</span>
+    <span class="text-slate/50">fontFamily</span><span class="text-slate">:</span> <span class="text-limestone/80">Public Sans</span>
+    <span class="text-slate/50">fontSize</span><span class="text-slate">:</span> <span class="text-limestone/80">3rem</span>
+<span class="text-slate/40">---</span></code></pre>
             </div>
+            <!-- Floating accent -->
+            <div class="absolute -top-4 -right-4 w-24 h-24 bg-terracotta/[0.06] rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-6 -left-6 w-32 h-32 bg-ink/[0.04] rounded-full blur-3xl"></div>
+          </div>
         </div>
-    </header>
+      </div>
+    </div>
+  </section>
 
-    <!-- Overview Section -->
-    <section id="overview" class="py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="grid md:grid-cols-2 gap-16 items-start">
-                <div>
-                    <span class="font-display text-xs font-semibold tracking-widest uppercase text-secondary mb-4 block">概述</span>
-                    <h2 class="text-3xl md:text-4xl font-semibold mb-6 tracking-tight">建筑极简主义与新闻庄重感相结合</h2>
-                    <p class="text-secondary leading-relaxed mb-6">
-                        UI 唤起一种高级哑光质感——如同高端大报或当代画廊。DESIGN.md 文件将机器可读的设计令牌（YAML 前置事项）与人类可读的设计原理（Markdown 正文）相结合。
-                    </p>
-                    <p class="text-secondary leading-relaxed">
-                        令牌提供精确值，正文解释这些值存在的原因以及如何应用它们。阅读此文件的智能体将生成一个符合设计意图的 UI。
-                    </p>
-                </div>
-                <div class="bg-white rounded-md p-8 border border-primary/5 shadow-sm">
-                    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-primary/5">
-                        <div class="w-10 h-10 bg-primary rounded-sm flex items-center justify-center">
-                            <svg class="w-5 h-5 text-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">文件结构</h3>
-                            <p class="text-sm text-secondary">两层架构设计</p>
-                        </div>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex items-start gap-4">
-                            <div class="w-8 h-8 bg-tertiary/10 rounded-sm flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span class="text-tertiary font-display font-bold text-sm">1</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-1">YAML 前置事项</h4>
-                                <p class="text-sm text-secondary">机器可读的设计令牌，以文件顶部的 <code class="bg-primary/5 px-1.5 py-0.5 rounded-sm">---</code> 围栏分隔。</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <div class="w-8 h-8 bg-tertiary/10 rounded-sm flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span class="text-tertiary font-display font-bold text-sm">2</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-1">Markdown 正文</h4>
-                                <p class="text-sm text-secondary">人类可读的设计原理，按 <code class="bg-primary/5 px-1.5 py-0.5 rounded-sm">##</code> 章节组织。</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- Overview -->
+  <section id="overview" class="py-24 lg:py-32">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <div class="section-rule mb-16"></div>
+      <div class="grid lg:grid-cols-12 gap-12">
+        <div class="lg:col-span-4">
+          <span class="fade-in font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta">01 — 概述</span>
+          <h2 class="fade-in stagger-1 mt-4 text-3xl lg:text-4xl font-bold tracking-tighter">为什么需要<br/>DESIGN.md</h2>
         </div>
-    </section>
-
-    <div class="section-divider max-w-4xl mx-auto"></div>
-
-    <!-- Colors Section -->
-    <section id="colors" class="py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <span class="font-display text-xs font-semibold tracking-widest uppercase text-secondary mb-4 block">颜色</span>
-            <h2 class="text-3xl md:text-4xl font-semibold mb-4 tracking-tight">高对比度中性色和单一强调色</h2>
-            <p class="text-secondary max-w-2xl mb-12">调色板以高对比度中性色和单一强调色为根基，营造高级哑光质感。</p>
-
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Primary -->
-                <div class="token-card bg-white rounded-md border border-primary/5 overflow-hidden">
-                    <div class="color-swatch h-32 bg-primary"></div>
-                    <div class="p-5">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-semibold">主色</h3>
-                            <span class="font-display text-xs text-secondary">#1A1C1E</span>
-                        </div>
-                        <p class="text-sm text-secondary">深墨色，用于标题和核心文本。</p>
-                    </div>
-                </div>
-
-                <!-- Secondary -->
-                <div class="token-card bg-white rounded-md border border-primary/5 overflow-hidden">
-                    <div class="color-swatch h-32 bg-secondary"></div>
-                    <div class="p-5">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-semibold">次色</h3>
-                            <span class="font-display text-xs text-secondary">#6C7278</span>
-                        </div>
-                        <p class="text-sm text-secondary">精致石板灰，用于边框、说明文字、元数据。</p>
-                    </div>
-                </div>
-
-                <!-- Tertiary -->
-                <div class="token-card bg-white rounded-md border border-primary/5 overflow-hidden">
-                    <div class="color-swatch h-32 bg-tertiary"></div>
-                    <div class="p-5">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-semibold">第三色</h3>
-                            <span class="font-display text-xs text-secondary">#B8422E</span>
-                        </div>
-                        <p class="text-sm text-secondary">"波士顿陶土"——交互的唯一驱动色。</p>
-                    </div>
-                </div>
-
-                <!-- Neutral -->
-                <div class="token-card bg-white rounded-md border border-primary/5 overflow-hidden">
-                    <div class="color-swatch h-32 bg-neutral border-b border-primary/5"></div>
-                    <div class="p-5">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-semibold">中性色</h3>
-                            <span class="font-display text-xs text-secondary">#F7F5F2</span>
-                        </div>
-                        <p class="text-sm text-secondary">温暖石灰岩底色，比纯白色更柔和。</p>
-                    </div>
-                </div>
+        <div class="lg:col-span-8 space-y-8">
+          <p class="fade-in stagger-2 text-lg text-slate leading-relaxed max-w-[65ch]">
+            建筑极简主义与新闻庄重感相结合。DESIGN.md 文件将机器可读的设计令牌（YAML 前置事项）与人类可读的设计原理（Markdown 正文）相结合。令牌提供精确值，正文解释这些值存在的原因以及如何应用它们。
+          </p>
+          <div class="fade-in stagger-3 grid sm:grid-cols-3 gap-6">
+            <div class="space-y-3 py-6 border-t border-ink/[0.08]">
+              <span class="font-grotesk text-3xl font-bold tracking-tighter text-ink">双层</span>
+              <p class="text-sm text-slate leading-relaxed">YAML 令牌层 + Markdown 原理层，结构化设计系统。</p>
             </div>
+            <div class="space-y-3 py-6 border-t border-ink/[0.08]">
+              <span class="font-grotesk text-3xl font-bold tracking-tighter text-ink">精确</span>
+              <p class="text-sm text-slate leading-relaxed">颜色、排版、间距、圆角——所有设计决策均可量化。</p>
+            </div>
+            <div class="space-y-3 py-6 border-t border-ink/[0.08]">
+              <span class="font-grotesk text-3xl font-bold tracking-tighter text-ink">互操作</span>
+              <p class="text-sm text-slate leading-relaxed">导出为 Tailwind 主题或 W3C DTCG 令牌格式。</p>
+            </div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <div class="section-divider max-w-4xl mx-auto"></div>
-
-    <!-- Typography Section -->
-    <section id="typography" class="py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <span class="font-display text-xs font-semibold tracking-widest uppercase text-secondary mb-4 block">排版</span>
-            <h2 class="text-3xl md:text-4xl font-semibold mb-4 tracking-tight">Public Sans 与 Space Grotesk</h2>
-            <p class="text-secondary max-w-2xl mb-12">精心选择的字体组合，平衡可读性与独特的视觉个性。</p>
-
-            <div class="grid md:grid-cols-2 gap-8">
-                <!-- Public Sans -->
-                <div class="bg-white rounded-md p-8 border border-primary/5">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-12 h-12 bg-primary/5 rounded-sm flex items-center justify-center">
-                            <span class="font-sans text-2xl font-semibold text-primary">Aa</span>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Public Sans</h3>
-                            <p class="text-sm text-secondary">标题与正文</p>
-                        </div>
-                    </div>
-                    <div class="space-y-6">
-                        <div>
-                            <span class="font-display text-xs text-secondary uppercase tracking-wider">H1 / 3rem</span>
-                            <p class="text-3xl font-semibold mt-1">深墨色标题</p>
-                        </div>
-                        <div>
-                            <span class="font-display text-xs text-secondary uppercase tracking-wider">正文 / 1rem</span>
-                            <p class="text-base mt-1 text-secondary leading-relaxed">正文文本使用舒适的字号和行高，确保长文阅读的流畅体验。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Space Grotesk -->
-                <div class="bg-white rounded-md p-8 border border-primary/5">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-12 h-12 bg-tertiary/10 rounded-sm flex items-center justify-center">
-                            <span class="font-display text-2xl font-bold text-tertiary">Aa</span>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold font-display">Space Grotesk</h3>
-                            <p class="text-sm text-secondary">标签与大写</p>
-                        </div>
-                    </div>
-                    <div class="space-y-6">
-                        <div>
-                            <span class="font-display text-xs text-secondary uppercase tracking-wider">Label Caps / 0.75rem</span>
-                            <p class="font-display text-xs font-medium uppercase tracking-widest mt-2 text-secondary">标签与大写文本</p>
-                        </div>
-                        <div class="pt-4 border-t border-primary/5">
-                            <p class="font-display text-sm text-secondary leading-relaxed">用于标签、徽章、导航和需要技术感的界面元素。大写字母与宽字距营造独特的视觉节奏。</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- Quick Start -->
+  <section id="quickstart" class="py-24 lg:py-32 bg-ink text-limestone">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <div class="grid lg:grid-cols-12 gap-12">
+        <div class="lg:col-span-4">
+          <span class="fade-in font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta-light">快速开始</span>
+          <h2 class="fade-in stagger-1 mt-4 text-3xl lg:text-4xl font-bold tracking-tighter text-limestone">即刻验证你的<br/>设计系统</h2>
+          <p class="fade-in stagger-2 mt-6 text-base text-limestone/50 leading-relaxed max-w-[40ch]">
+            验证规范合规性、捕获损坏引用、检查 WCAG 对比度——所有操作均可通过 CLI 完成。
+          </p>
         </div>
-    </section>
-
-    <div class="section-divider max-w-4xl mx-auto"></div>
-
-    <!-- Tokens Section -->
-    <section id="tokens" class="py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <span class="font-display text-xs font-semibold tracking-widest uppercase text-secondary mb-4 block">令牌模式</span>
-            <h2 class="text-3xl md:text-4xl font-semibold mb-4 tracking-tight">结构化设计令牌</h2>
-            <p class="text-secondary max-w-2xl mb-12">令牌是规范值，正文提供如何应用它们的上下文。</p>
-
-            <div class="bg-primary rounded-md overflow-hidden">
-                <div class="flex items-center gap-2 px-6 py-4 bg-primary border-b border-white/10">
-                    <div class="w-3 h-3 rounded-full bg-tertiary"></div>
-                    <div class="w-3 h-3 rounded-full bg-white/20"></div>
-                    <div class="w-3 h-3 rounded-full bg-white/20"></div>
-                    <span class="ml-4 text-xs text-white/50 font-display">DESIGN.md</span>
-                </div>
-                <div class="p-6 md:p-8 overflow-x-auto">
-                    <pre class="text-sm leading-relaxed"><code class="text-white/90">
-<span class="text-white/40">---</span>
-<span class="text-tertiary">name</span>: <span class="text-green-400">Heritage</span>
-<span class="text-tertiary">colors</span>:
-  <span class="text-tertiary">primary</span>: <span class="text-green-400">"#1A1C1E"</span>
-  <span class="text-tertiary">secondary</span>: <span class="text-green-400">"#6C7278"</span>
-  <span class="text-tertiary">tertiary</span>: <span class="text-green-400">"#B8422E"</span>
-  <span class="text-tertiary">neutral</span>: <span class="text-green-400">"#F7F5F2"</span>
-<span class="text-tertiary">typography</span>:
-  <span class="text-tertiary">h1</span>:
-    <span class="text-tertiary">fontFamily</span>: <span class="text-green-400">Public Sans</span>
-    <span class="text-tertiary">fontSize</span>: <span class="text-green-400">3rem</span>
-  <span class="text-tertiary">body-md</span>:
-    <span class="text-tertiary">fontFamily</span>: <span class="text-green-400">Public Sans</span>
-    <span class="text-tertiary">fontSize</span>: <span class="text-green-400">1rem</span>
-  <span class="text-tertiary">label-caps</span>:
-    <span class="text-tertiary">fontFamily</span>: <span class="text-green-400">Space Grotesk</span>
-    <span class="text-tertiary">fontSize</span>: <span class="text-green-400">0.75rem</span>
-<span class="text-tertiary">rounded</span>:
-  <span class="text-tertiary">sm</span>: <span class="text-green-400">4px</span>
-  <span class="text-tertiary">md</span>: <span class="text-green-400">8px</span>
-<span class="text-tertiary">spacing</span>:
-  <span class="text-tertiary">sm</span>: <span class="text-green-400">8px</span>
-  <span class="text-tertiary">md</span>: <span class="text-green-400">16px</span>
-<span class="text-white/40">---</span>
-                    </code></pre>
-                </div>
+        <div class="lg:col-span-8 space-y-6" style="counter-reset: step;">
+          <!-- Step 1 -->
+          <div class="fade-in cli-step flex items-start gap-5 p-6 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+            <div class="space-y-2 min-w-0">
+              <h3 class="font-grotesk font-semibold text-sm tracking-tight">验证 DESIGN.md</h3>
+              <p class="text-sm text-limestone/40 leading-relaxed">检查结构正确性、对比度比率和令牌引用。</p>
+              <div class="mt-3 bg-ink rounded-lg px-4 py-3 overflow-x-auto">
+                <code class="text-sm text-limestone/80 whitespace-nowrap">npx @google/design.md lint DESIGN.md</code>
+              </div>
             </div>
-
-            <!-- Token Types Table -->
-            <div class="mt-12 bg-white rounded-md border border-primary/5 overflow-hidden">
-                <div class="px-6 py-4 border-b border-primary/5 bg-primary/[0.02]">
-                    <h3 class="font-semibold">令牌类型</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-primary/5">
-                                <th class="text-left px-6 py-3 font-display text-xs uppercase tracking-wider text-secondary">类型</th>
-                                <th class="text-left px-6 py-3 font-display text-xs uppercase tracking-wider text-secondary">格式</th>
-                                <th class="text-left px-6 py-3 font-display text-xs uppercase tracking-wider text-secondary">示例</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-medium">颜色</td>
-                                <td class="px-6 py-4 text-secondary"><code class="bg-primary/5 px-2 py-1 rounded-sm">#</code> + 十六进制 (sRGB)</td>
-                                <td class="px-6 py-4 font-display text-secondary"><code class="bg-primary/5 px-2 py-1 rounded-sm">"#1A1C1E"</code></td>
-                            </tr>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-medium">尺寸</td>
-                                <td class="px-6 py-4 text-secondary">数字 + 单位 (<code class="bg-primary/5 px-2 py-1 rounded-sm">px</code>, <code class="bg-primary/5 px-2 py-1 rounded-sm">em</code>, <code class="bg-primary/5 px-2 py-1 rounded-sm">rem</code>)</td>
-                                <td class="px-6 py-4 font-display text-secondary"><code class="bg-primary/5 px-2 py-1 rounded-sm">48px</code>, <code class="bg-primary/5 px-2 py-1 rounded-sm">-0.02em</code></td>
-                            </tr>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-medium">令牌引用</td>
-                                <td class="px-6 py-4 text-secondary"><code class="bg-primary/5 px-2 py-1 rounded-sm">{path.to.token}</code></td>
-                                <td class="px-6 py-4 font-display text-secondary"><code class="bg-primary/5 px-2 py-1 rounded-sm">{colors.primary}</code></td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 font-medium">排版</td>
-                                <td class="px-6 py-4 text-secondary">包含字体属性的对象</td>
-                                <td class="px-6 py-4 font-display text-secondary"><code class="bg-primary/5 px-2 py-1 rounded-sm">fontFamily</code> 等</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="fade-in stagger-1 cli-step flex items-start gap-5 p-6 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+            <div class="space-y-2 min-w-0">
+              <h3 class="font-grotesk font-semibold text-sm tracking-tight">比较版本差异</h3>
+              <p class="text-sm text-limestone/40 leading-relaxed">检测令牌级别和正文回归。</p>
+              <div class="mt-3 bg-ink rounded-lg px-4 py-3 overflow-x-auto">
+                <code class="text-sm text-limestone/80 whitespace-nowrap">npx @google/design.md diff DESIGN.md DESIGN-v2.md</code>
+              </div>
             </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="fade-in stagger-2 cli-step flex items-start gap-5 p-6 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+            <div class="space-y-2 min-w-0">
+              <h3 class="font-grotesk font-semibold text-sm tracking-tight">导出令牌</h3>
+              <p class="text-sm text-limestone/40 leading-relaxed">输出为 Tailwind 主题或 W3C DTCG 格式。</p>
+              <div class="mt-3 bg-ink rounded-lg px-4 py-3 overflow-x-auto">
+                <code class="text-sm text-limestone/80 whitespace-nowrap">npx @google/design.md export --format tailwind DESIGN.md</code>
+              </div>
+            </div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <div class="section-divider max-w-4xl mx-auto"></div>
-
-    <!-- CLI Section -->
-    <section id="cli" class="py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <span class="font-display text-xs font-semibold tracking-widest uppercase text-secondary mb-4 block">CLI 参考</span>
-            <h2 class="text-3xl md:text-4xl font-semibold mb-4 tracking-tight">命令行工具</h2>
-            <p class="text-secondary max-w-2xl mb-12">安装 <code class="bg-primary/5 px-1.5 py-0.5 rounded-sm">@google/design.md</code> 即可使用完整的命令行工具集。</p>
-
-            <div class="grid md:grid-cols-2 gap-8">
-                <!-- Lint Command -->
-                <div class="bg-white rounded-md p-8 border border-primary/5">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-tertiary/10 rounded-sm flex items-center justify-center">
-                            <svg class="w-5 h-5 text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">lint</h3>
-                            <p class="text-sm text-secondary">验证文件结构</p>
-                        </div>
-                    </div>
-                    <div class="cli-command bg-primary rounded-sm p-4 pl-10 text-neutral text-sm font-mono">
-                        npx @google/design.md lint DESIGN.md
-                    </div>
-                    <p class="text-sm text-secondary mt-4">验证 DESIGN.md 文件的结构正确性，检查损坏的令牌引用和 WCAG 对比度比率。</p>
-                </div>
-
-                <!-- Diff Command -->
-                <div class="bg-white rounded-md p-8 border border-primary/5">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-tertiary/10 rounded-sm flex items-center justify-center">
-                            <svg class="w-5 h-5 text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">diff</h3>
-                            <p class="text-sm text-secondary">比较版本差异</p>
-                        </div>
-                    </div>
-                    <div class="cli-command bg-primary rounded-sm p-4 pl-10 text-neutral text-sm font-mono">
-                        npx @google/design.md diff DESIGN.md DESIGN-v2.md
-                    </div>
-                    <p class="text-sm text-secondary mt-4">比较两个 DESIGN.md 文件，检测令牌级别和正文回归。</p>
-                </div>
-
-                <!-- Export Command -->
-                <div class="bg-white rounded-md p-8 border border-primary/5">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-tertiary/10 rounded-sm flex items-center justify-center">
-                            <svg class="w-5 h-5 text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">export</h3>
-                            <p class="text-sm text-secondary">导出为其他格式</p>
-                        </div>
-                    </div>
-                    <div class="cli-command bg-primary rounded-sm p-4 pl-10 text-neutral text-sm font-mono">
-                        npx @google/design.md export --format tailwind DESIGN.md
-                    </div>
-                    <p class="text-sm text-secondary mt-4">将令牌导出为 Tailwind 主题配置或 DTCG tokens.json 格式。</p>
-                </div>
-
-                <!-- Spec Command -->
-                <div class="bg-white rounded-md p-8 border border-primary/5">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-tertiary/10 rounded-sm flex items-center justify-center">
-                            <svg class="w-5 h-5 text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">spec</h3>
-                            <p class="text-sm text-secondary">输出格式规范</p>
-                        </div>
-                    </div>
-                    <div class="cli-command bg-primary rounded-sm p-4 pl-10 text-neutral text-sm font-mono">
-                        npx @google/design.md spec --rules
-                    </div>
-                    <p class="text-sm text-secondary mt-4">输出 DESIGN.md 格式规范，可用于将规范上下文注入智能体提示。</p>
-                </div>
+  <!-- Spec -->
+  <section id="spec" class="py-24 lg:py-32">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <div class="section-rule mb-16"></div>
+      <div class="grid lg:grid-cols-12 gap-12">
+        <div class="lg:col-span-5">
+          <span class="fade-in font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta">02 — 规范</span>
+          <h2 class="fade-in stagger-1 mt-4 text-3xl lg:text-4xl font-bold tracking-tighter">文件结构</h2>
+          <p class="fade-in stagger-2 mt-6 text-base text-slate leading-relaxed">
+            DESIGN.md 由两层构成：YAML 前置事项承载机器可读令牌，Markdown 正文承载人类可读原理。
+          </p>
+          <!-- Section order -->
+          <div class="fade-in stagger-3 mt-10 space-y-0 border-t border-ink/[0.08]">
+            <div class="flex items-baseline gap-4 py-3 border-b border-ink/[0.05] hover-row px-2">
+              <span class="font-grotesk text-xs text-terracotta font-semibold w-6">1</span>
+              <span class="text-sm font-medium">概述</span>
+              <span class="text-xs text-slate ml-auto">品牌与风格</span>
             </div>
+            <div class="flex items-baseline gap-4 py-3 border-b border-ink/[0.05] hover-row px-2">
+              <span class="font-grotesk text-xs text-terracotta font-semibold w-6">2</span>
+              <span class="text-sm font-medium">颜色</span>
+              <span class="text-xs text-slate ml-auto"></span>
+            </div>
+            <div class="flex items-baseline gap-4 py-3 border-b border-ink/[0.05] hover-row px-2">
+              <span class="font-grotesk text-xs text-terracotta font-semibold w-6">3</span>
+              <span class="text-sm font-medium">排版</span>
+              <span class="text-xs text-slate ml-auto"></span>
+            </div>
+            <div class="flex items-baseline gap-4 py-3 border-b border-ink/[0.05] hover-row px-2">
+              <span class="font-grotesk text-xs text-terracotta font-semibold w-6">4</span>
+              <span class="text-sm font-medium">布局</span>
+              <span class="text-xs text-slate ml-auto">布局与间距</span>
+            </div>
+            <div class="flex items-baseline gap-4 py-3 border-b border-ink/[0.05] hover-row px-2">
+              <span class="font-grotesk text-xs text-terracotta font-semibold w-6">5</span>
+              <span class="text-sm font-medium">高度与深度</span>
+              <span class="text-xs text-slate ml-auto">高度</span>
+            </div>
+            <div class="flex items-baseline gap-4 py-3 border-b border-ink/[0.05] hover-row px-2">
+              <span class="font-grotesk text-xs text-terracotta font-semibold w-6">6</span>
+              <span class="text-sm font-medium">形状</span>
+              <span class="text-xs text-slate ml-auto"></span>
+            </div>
+            <div class="flex items-baseline gap-4 py-3 border-b border-ink/[0.05] hover-row px-2">
+              <span class="font-grotesk text-xs text-terracotta font-semibold w-6">7</span>
+              <span class="text-sm font-medium">组件</span>
+              <span class="text-xs text-slate ml-auto"></span>
+            </div>
+            <div class="flex items-baseline gap-4 py-3 border-b border-ink/[0.05] hover-row px-2">
+              <span class="font-grotesk text-xs text-terracotta font-semibold w-6">8</span>
+              <span class="text-sm font-medium">注意事项</span>
+              <span class="text-xs text-slate ml-auto"></span>
+            </div>
+          </div>
         </div>
-    </section>
-
-    <div class="section-divider max-w-4xl mx-auto"></div>
-
-    <!-- Linting Rules Section -->
-    <section class="py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <span class="font-display text-xs font-semibold tracking-widest uppercase text-secondary mb-4 block">Linting 规则</span>
-            <h2 class="text-3xl md:text-4xl font-semibold mb-4 tracking-tight">七条验证规则</h2>
-            <p class="text-secondary max-w-2xl mb-12">Linter 针对解析后的 DESIGN.md 运行七条规则，每条规则产生固定严重级别的发现结果。</p>
-
-            <div class="bg-white rounded-md border border-primary/5 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-primary/5 bg-primary/[0.02]">
-                                <th class="text-left px-6 py-4 font-display text-xs uppercase tracking-wider text-secondary">规则</th>
-                                <th class="text-left px-6 py-4 font-display text-xs uppercase tracking-wider text-secondary">严重级别</th>
-                                <th class="text-left px-6 py-4 font-display text-xs uppercase tracking-wider text-secondary">检查内容</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-mono text-xs text-secondary">broken-ref</td>
-                                <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-red-50 text-red-700">错误</span></td>
-                                <td class="px-6 py-4 text-secondary">令牌引用无法解析为任何已定义令牌</td>
-                            </tr>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-mono text-xs text-secondary">missing-primary</td>
-                                <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-amber-50 text-amber-700">警告</span></td>
-                                <td class="px-6 py-4 text-secondary">颜色已定义但不存在 primary 颜色</td>
-                            </tr>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-mono text-xs text-secondary">contrast-ratio</td>
-                                <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-amber-50 text-amber-700">警告</span></td>
-                                <td class="px-6 py-4 text-secondary">组件对比度低于 WCAG AA 最低标准 (4.5:1)</td>
-                            </tr>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-mono text-xs text-secondary">orphaned-tokens</td>
-                                <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-amber-50 text-amber-700">警告</span></td>
-                                <td class="px-6 py-4 text-secondary">颜色令牌已定义但未被任何组件引用</td>
-                            </tr>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-mono text-xs text-secondary">token-summary</td>
-                                <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-blue-50 text-blue-700">信息</span></td>
-                                <td class="px-6 py-4 text-secondary">每个章节中定义的令牌数量摘要</td>
-                            </tr>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-mono text-xs text-secondary">missing-sections</td>
-                                <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-blue-50 text-blue-700">信息</span></td>
-                                <td class="px-6 py-4 text-secondary">可选章节（间距、圆角）缺失</td>
-                            </tr>
-                            <tr class="border-b border-primary/5">
-                                <td class="px-6 py-4 font-mono text-xs text-secondary">missing-typography</td>
-                                <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-amber-50 text-amber-700">警告</span></td>
-                                <td class="px-6 py-4 text-secondary">颜色已定义但不存在排版令牌</td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 font-mono text-xs text-secondary">section-order</td>
-                                <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-amber-50 text-amber-700">警告</span></td>
-                                <td class="px-6 py-4 text-secondary">章节出现在规范顺序之外</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="lg:col-span-7">
+          <!-- Token Schema code block -->
+          <div class="fade-in stagger-2">
+            <div class="font-grotesk text-xs font-medium tracking-widest uppercase text-slate/50 mb-3">令牌模式</div>
+            <div class="bg-ink rounded-2xl overflow-hidden">
+              <pre class="p-6 text-sm leading-relaxed overflow-x-auto"><code><span class="text-terracotta-light">version</span><span class="text-slate">:</span> <span class="text-limestone/60">&lt;string&gt;</span>          <span class="text-slate/30"># 可选，当前: "alpha"</span>
+<span class="text-terracotta-light">name</span><span class="text-slate">:</span> <span class="text-limestone/60">&lt;string&gt;</span>
+<span class="text-terracotta-light">description</span><span class="text-slate">:</span> <span class="text-limestone/60">&lt;string&gt;</span>      <span class="text-slate/30"># 可选</span>
+<span class="text-terracotta-light">colors</span><span class="text-slate">:</span>
+  <span class="text-limestone/60">&lt;token-name&gt;</span><span class="text-slate">:</span> <span class="text-limestone/60">&lt;Color&gt;</span>
+<span class="text-terracotta-light">typography</span><span class="text-slate">:</span>
+  <span class="text-limestone/60">&lt;token-name&gt;</span><span class="text-slate">:</span> <span class="text-limestone/60">&lt;Typography&gt;</span>
+<span class="text-terracotta-light">rounded</span><span class="text-slate">:</span>
+  <span class="text-limestone/60">&lt;scale-level&gt;</span><span class="text-slate">:</span> <span class="text-limestone/60">&lt;Dimension&gt;</span>
+<span class="text-terracotta-light">spacing</span><span class="text-slate">:</span>
+  <span class="text-limestone/60">&lt;scale-level&gt;</span><span class="text-slate">:</span> <span class="text-limestone/60">&lt;Dimension | number&gt;</span>
+<span class="text-terracotta-light">components</span><span class="text-slate">:</span>
+  <span class="text-limestone/60">&lt;component-name&gt;</span><span class="text-slate">:</span>
+    <span class="text-limestone/60">&lt;token-name&gt;</span><span class="text-slate">:</span> <span class="text-limestone/60">&lt;string | token reference&gt;</span></code></pre>
             </div>
+          </div>
+          <!-- Component example -->
+          <div class="fade-in stagger-3 mt-6">
+            <div class="font-grotesk text-xs font-medium tracking-widest uppercase text-slate/50 mb-3">组件令牌示例</div>
+            <div class="bg-ink rounded-2xl overflow-hidden">
+              <pre class="p-6 text-sm leading-relaxed overflow-x-auto"><code><span class="text-terracotta-light">components</span><span class="text-slate">:</span>
+  <span class="text-limestone/80">button-primary</span><span class="text-slate">:</span>
+    <span class="text-limestone/60">backgroundColor</span><span class="text-slate">:</span> <span class="text-limestone/80">"{colors.tertiary}"</span>
+    <span class="text-limestone/60">textColor</span><span class="text-slate">:</span> <span class="text-limestone/80">"{colors.on-tertiary}"</span>
+    <span class="text-limestone/60">rounded</span><span class="text-slate">:</span> <span class="text-limestone/80">"{rounded.sm}"</span>
+    <span class="text-limestone/60">padding</span><span class="text-slate">:</span> <span class="text-limestone/80">12px</span>
+  <span class="text-limestone/80">button-primary-hover</span><span class="text-slate">:</span>
+    <span class="text-limestone/60">backgroundColor</span><span class="text-slate">:</span> <span class="text-limestone/80">"{colors.tertiary-container}"</span></code></pre>
+            </div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <!-- Quick Start CTA -->
-    <section id="start" class="py-20 md:py-28 bg-primary text-neutral">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h2 class="text-3xl md:text-4xl font-semibold mb-6 tracking-tight">开始使用 DESIGN.md</h2>
-            <p class="text-white/70 text-lg mb-10 max-w-2xl mx-auto">验证 DESIGN.md 是否符合规范，捕获损坏的令牌引用，检查 WCAG 对比度比率。</p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <div class="cli-command bg-white/10 backdrop-blur-sm rounded-sm px-6 py-4 text-sm font-mono text-left w-full max-w-lg">
-                    npm install @google/design.md
-                </div>
-            </div>
-            <div class="mt-8 flex flex-wrap justify-center gap-4">
-                <a href="https://github.com/google-labs-code/design.md/blob/main/docs/spec.md" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-tertiary text-on-tertiary px-6 py-3.5 rounded-sm font-semibold hover:bg-tertiary-container transition-colors">
-                    查看文档
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                </a>
-                <a href="https://github.com/google-labs-code/design.md" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-white/10 text-neutral px-6 py-3.5 rounded-sm font-semibold hover:bg-white/20 transition-colors backdrop-blur-sm">
-                    GitHub 仓库
-                </a>
-            </div>
-            <div class="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/40">
-                <a href="https://www.designtokens.org/" target="_blank" rel="noopener noreferrer" class="hover:text-neutral transition-colors">W3C 设计令牌格式</a>
-                <a href="https://tr.designtokens.org/format/" target="_blank" rel="noopener noreferrer" class="hover:text-neutral transition-colors">DTCG 格式模块</a>
-                <a href="https://bughunters.google.com/open-source-security" target="_blank" rel="noopener noreferrer" class="hover:text-neutral transition-colors">漏洞奖励计划</a>
-            </div>
+  <!-- Token Types -->
+  <section id="tokens" class="py-24 lg:py-32 bg-limestone-dark">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <div class="text-center mb-16">
+        <span class="fade-in font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta">03 — 令牌类型</span>
+        <h2 class="fade-in stagger-1 mt-4 text-3xl lg:text-4xl font-bold tracking-tighter">设计令牌一览</h2>
+      </div>
+      <div class="fade-in stagger-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Color -->
+        <div class="token-card bg-limestone rounded-xl p-6 space-y-4 border border-ink/[0.04]">
+          <div class="w-10 h-10 rounded-lg bg-ink flex items-center justify-center">
+            <svg class="w-5 h-5 text-limestone" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072"/></svg>
+          </div>
+          <div>
+            <h3 class="font-grotesk font-semibold text-sm tracking-tight">颜色</h3>
+            <p class="text-xs text-slate mt-1 leading-relaxed">sRGB 十六进制格式</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded bg-ink"></div>
+            <code class="font-grotesk text-xs text-slate">#1A1C1E</code>
+          </div>
         </div>
-    </section>
+        <!-- Dimension -->
+        <div class="token-card bg-limestone rounded-xl p-6 space-y-4 border border-ink/[0.04]">
+          <div class="w-10 h-10 rounded-lg bg-ink flex items-center justify-center">
+            <svg class="w-5 h-5 text-limestone" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/></svg>
+          </div>
+          <div>
+            <h3 class="font-grotesk font-semibold text-sm tracking-tight">尺寸</h3>
+            <p class="text-xs text-slate mt-1 leading-relaxed">数字 + 单位</p>
+          </div>
+          <code class="font-grotesk text-xs text-slate block">48px · -0.02em · 3rem</code>
+        </div>
+        <!-- Token Reference -->
+        <div class="token-card bg-limestone rounded-xl p-6 space-y-4 border border-ink/[0.04]">
+          <div class="w-10 h-10 rounded-lg bg-ink flex items-center justify-center">
+            <svg class="w-5 h-5 text-limestone" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.07-9.07l4.5 4.5a4.5 4.5 0 010 6.364l-4.5 4.5a4.5 4.5 0 01-6.364 0l-1.757-1.757"/></svg>
+          </div>
+          <div>
+            <h3 class="font-grotesk font-semibold text-sm tracking-tight">令牌引用</h3>
+            <p class="text-xs text-slate mt-1 leading-relaxed">引用其他令牌</p>
+          </div>
+          <code class="font-grotesk text-xs text-terracotta block">{colors.primary}</code>
+        </div>
+        <!-- Typography -->
+        <div class="token-card bg-limestone rounded-xl p-6 space-y-4 border border-ink/[0.04]">
+          <div class="w-10 h-10 rounded-lg bg-ink flex items-center justify-center">
+            <svg class="w-5 h-5 text-limestone" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-grotesk font-semibold text-sm tracking-tight">排版</h3>
+            <p class="text-xs text-slate mt-1 leading-relaxed">字体族、大小、字重</p>
+          </div>
+          <code class="font-grotesk text-xs text-slate block">fontFamily · fontSize …</code>
+        </div>
+      </div>
+      <!-- Color palette visualization -->
+      <div class="fade-in stagger-4 mt-16">
+        <div class="font-grotesk text-xs font-medium tracking-widest uppercase text-slate/50 mb-4">Heritage 调色板</div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="space-y-3">
+            <div class="h-24 rounded-xl bg-ink shadow-lg"></div>
+            <div>
+              <p class="font-grotesk text-xs font-semibold tracking-tight">主色</p>
+              <p class="font-grotesk text-xs text-slate">#1A1C1E · 深墨色</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="h-24 rounded-xl bg-slate shadow-lg"></div>
+            <div>
+              <p class="font-grotesk text-xs font-semibold tracking-tight">次色</p>
+              <p class="font-grotesk text-xs text-slate">#6C7278 · 石板灰</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="h-24 rounded-xl bg-terracotta shadow-lg"></div>
+            <div>
+              <p class="font-grotesk text-xs font-semibold tracking-tight">第三色</p>
+              <p class="font-grotesk text-xs text-slate">#B8422E · 波士顿陶土</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="h-24 rounded-xl bg-limestone border border-ink/[0.08] shadow-lg"></div>
+            <div>
+              <p class="font-grotesk text-xs font-semibold tracking-tight">中性色</p>
+              <p class="font-grotesk text-xs text-slate">#F7F5F2 · 温暖石灰岩</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer class="bg-primary border-t border-white/5 py-12">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-white/10 rounded-sm flex items-center justify-center">
-                        <span class="text-neutral font-display font-bold text-sm">D</span>
-                    </div>
-                    <span class="font-display font-semibold text-neutral/80">DESIGN.md</span>
-                </div>
-                <div class="flex items-center gap-6 text-sm text-white/40">
-                    <a href="https://github.com/google-labs-code/design.md/blob/main/docs/spec.md" target="_blank" rel="noopener noreferrer" class="hover:text-neutral transition-colors">规范</a>
-                    <a href="#cli" class="hover:text-neutral transition-colors">CLI</a>
-                    <a href="https://github.com/google-labs-code/design.md" target="_blank" rel="noopener noreferrer" class="hover:text-neutral transition-colors">GitHub</a>
-                </div>
-                <p class="text-sm text-white/30">当前版本：Alpha</p>
+  <!-- CLI Reference -->
+  <section id="cli" class="py-24 lg:py-32">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <div class="section-rule mb-16"></div>
+      <span class="fade-in font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta">04 — CLI 参考</span>
+      <h2 class="fade-in stagger-1 mt-4 text-3xl lg:text-4xl font-bold tracking-tighter mb-12">命令行工具</h2>
+
+      <div class="space-y-6">
+        <!-- lint -->
+        <div class="fade-in">
+          <div class="bg-limestone-dark rounded-xl border border-ink/[0.04] overflow-hidden">
+            <div class="flex items-center gap-3 px-6 py-4 border-b border-ink/[0.06]">
+              <span class="font-grotesk text-sm font-bold text-ink">lint</span>
+              <span class="text-xs text-slate">验证文件结构正确性</span>
             </div>
+            <div class="px-6 py-5">
+              <div class="bg-ink rounded-lg px-5 py-4 overflow-x-auto">
+                <pre class="text-sm"><code><span class="text-terracotta-light">$</span> <span class="text-limestone/80">npx @google/design.md lint DESIGN.md</span>
+<span class="text-terracotta-light">$</span> <span class="text-limestone/80">npx @google/design.md lint --format json DESIGN.md</span>
+<span class="text-terracotta-light">$</span> <span class="text-limestone/60">cat DESIGN.md | npx @google/design.md lint -</span></code></pre>
+              </div>
+              <div class="mt-4 grid sm:grid-cols-3 gap-4 text-xs">
+                <div class="space-y-1">
+                  <span class="font-grotesk font-semibold text-ink">file</span>
+                  <p class="text-slate">位置参数 · 必需 · 文件路径或 <code class="text-terracotta">-</code></p>
+                </div>
+                <div class="space-y-1">
+                  <span class="font-grotesk font-semibold text-ink">--format</span>
+                  <p class="text-slate">json · 默认: json</p>
+                </div>
+                <div class="space-y-1">
+                  <span class="font-grotesk font-semibold text-ink">退出代码</span>
+                  <p class="text-slate">有错误返回 <code class="text-terracotta">1</code>，否则 <code>0</code></p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-    </footer>
+
+        <!-- diff -->
+        <div class="fade-in stagger-1">
+          <div class="bg-limestone-dark rounded-xl border border-ink/[0.04] overflow-hidden">
+            <div class="flex items-center gap-3 px-6 py-4 border-b border-ink/[0.06]">
+              <span class="font-grotesk text-sm font-bold text-ink">diff</span>
+              <span class="text-xs text-slate">比较两个版本的令牌变更</span>
+            </div>
+            <div class="px-6 py-5">
+              <div class="bg-ink rounded-lg px-5 py-4 overflow-x-auto">
+                <pre class="text-sm"><code><span class="text-terracotta-light">$</span> <span class="text-limestone/80">npx @google/design.md diff DESIGN.md DESIGN-v2.md</span></code></pre>
+              </div>
+              <div class="mt-4 grid sm:grid-cols-3 gap-4 text-xs">
+                <div class="space-y-1">
+                  <span class="font-grotesk font-semibold text-ink">before</span>
+                  <p class="text-slate">位置参数 · 必需 · "之前" 路径</p>
+                </div>
+                <div class="space-y-1">
+                  <span class="font-grotesk font-semibold text-ink">after</span>
+                  <p class="text-slate">位置参数 · 必需 · "之后" 路径</p>
+                </div>
+                <div class="space-y-1">
+                  <span class="font-grotesk font-semibold text-ink">退出代码</span>
+                  <p class="text-slate">检测到回归返回 <code class="text-terracotta">1</code></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- export -->
+        <div class="fade-in stagger-2">
+          <div class="bg-limestone-dark rounded-xl border border-ink/[0.04] overflow-hidden">
+            <div class="flex items-center gap-3 px-6 py-4 border-b border-ink/[0.06]">
+              <span class="font-grotesk text-sm font-bold text-ink">export</span>
+              <span class="text-xs text-slate">导出为 Tailwind 或 DTCG 格式</span>
+            </div>
+            <div class="px-6 py-5">
+              <div class="bg-ink rounded-lg px-5 py-4 overflow-x-auto">
+                <pre class="text-sm"><code><span class="text-terracotta-light">$</span> <span class="text-limestone/80">npx @google/design.md export --format tailwind DESIGN.md</span>
+<span class="text-terracotta-light">$</span> <span class="text-limestone/80">npx @google/design.md export --format dtcg DESIGN.md</span></code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- spec -->
+        <div class="fade-in stagger-3">
+          <div class="bg-limestone-dark rounded-xl border border-ink/[0.04] overflow-hidden">
+            <div class="flex items-center gap-3 px-6 py-4 border-b border-ink/[0.06]">
+              <span class="font-grotesk text-sm font-bold text-ink">spec</span>
+              <span class="text-xs text-slate">输出格式规范（可注入智能体提示）</span>
+            </div>
+            <div class="px-6 py-5">
+              <div class="bg-ink rounded-lg px-5 py-4 overflow-x-auto">
+                <pre class="text-sm"><code><span class="text-terracotta-light">$</span> <span class="text-limestone/80">npx @google/design.md spec</span>
+<span class="text-terracotta-light">$</span> <span class="text-limestone/80">npx @google/design.md spec --rules</span>
+<span class="text-terracotta-light">$</span> <span class="text-limestone/80">npx @google/design.md spec --rules-only --format json</span></code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Linting Rules -->
+  <section id="rules" class="py-24 lg:py-32 bg-ink text-limestone">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <span class="fade-in font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta-light">05 — Linting 规则</span>
+      <h2 class="fade-in stagger-1 mt-4 text-3xl lg:text-4xl font-bold tracking-tighter mb-12">八条内置规则</h2>
+
+      <div class="fade-in stagger-2 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/[0.08]">
+              <th class="text-left font-grotesk font-semibold text-xs tracking-widest uppercase text-limestone/40 pb-4 pr-6">规则</th>
+              <th class="text-left font-grotesk font-semibold text-xs tracking-widest uppercase text-limestone/40 pb-4 pr-6">严重级别</th>
+              <th class="text-left font-grotesk font-semibold text-xs tracking-widest uppercase text-limestone/40 pb-4">检查内容</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-white/[0.04] hover-row">
+              <td class="py-4 pr-6"><code class="font-grotesk text-terracotta-light">broken-ref</code></td>
+              <td class="py-4 pr-6"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-red-500/10 text-red-400">错误</span></td>
+              <td class="py-4 text-limestone/60">令牌引用无法解析为任何已定义令牌</td>
+            </tr>
+            <tr class="border-b border-white/[0.04] hover-row">
+              <td class="py-4 pr-6"><code class="font-grotesk text-terracotta-light">missing-primary</code></td>
+              <td class="py-4 pr-6"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-amber-500/10 text-amber-400">警告</span></td>
+              <td class="py-4 text-limestone/60">颜色已定义但不存在 primary 颜色</td>
+            </tr>
+            <tr class="border-b border-white/[0.04] hover-row">
+              <td class="py-4 pr-6"><code class="font-grotesk text-terracotta-light">contrast-ratio</code></td>
+              <td class="py-4 pr-6"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-amber-500/10 text-amber-400">警告</span></td>
+              <td class="py-4 text-limestone/60">组件对比度低于 WCAG AA 最低标准 (4.5:1)</td>
+            </tr>
+            <tr class="border-b border-white/[0.04] hover-row">
+              <td class="py-4 pr-6"><code class="font-grotesk text-terracotta-light">orphaned-tokens</code></td>
+              <td class="py-4 pr-6"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-amber-500/10 text-amber-400">警告</span></td>
+              <td class="py-4 text-limestone/60">颜色令牌已定义但未被任何组件引用</td>
+            </tr>
+            <tr class="border-b border-white/[0.04] hover-row">
+              <td class="py-4 pr-6"><code class="font-grotesk text-terracotta-light">token-summary</code></td>
+              <td class="py-4 pr-6"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400">信息</span></td>
+              <td class="py-4 text-limestone/60">每个章节中定义的令牌数量摘要</td>
+            </tr>
+            <tr class="border-b border-white/[0.04] hover-row">
+              <td class="py-4 pr-6"><code class="font-grotesk text-terracotta-light">missing-sections</code></td>
+              <td class="py-4 pr-6"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400">信息</span></td>
+              <td class="py-4 text-limestone/60">可选章节（间距、圆角）缺失</td>
+            </tr>
+            <tr class="border-b border-white/[0.04] hover-row">
+              <td class="py-4 pr-6"><code class="font-grotesk text-terracotta-light">missing-typography</code></td>
+              <td class="py-4 pr-6"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-amber-500/10 text-amber-400">警告</span></td>
+              <td class="py-4 text-limestone/60">颜色已定义但不存在排版令牌</td>
+            </tr>
+            <tr class="hover-row">
+              <td class="py-4 pr-6"><code class="font-grotesk text-terracotta-light">section-order</code></td>
+              <td class="py-4 pr-6"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-amber-500/10 text-amber-400">警告</span></td>
+              <td class="py-4 text-limestone/60">章节出现在规范定义的规范顺序之外</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Programmatic API -->
+      <div class="fade-in stagger-4 mt-16">
+        <div class="font-grotesk text-xs font-medium tracking-widest uppercase text-limestone/30 mb-3">程序化 API</div>
+        <div class="bg-white/[0.04] rounded-xl border border-white/[0.06] overflow-hidden">
+          <pre class="p-6 text-sm leading-relaxed overflow-x-auto"><code><span class="text-terracotta-light">import</span> <span class="text-limestone/80">{ lint }</span> <span class="text-terracotta-light">from</span> <span class="text-limestone/80">'@google/design.md/linter'</span><span class="text-slate">;</span>
+
+<span class="text-terracotta-light">const</span> <span class="text-limestone/80">report</span> <span class="text-slate">=</span> <span class="text-limestone/80">lint</span><span class="text-slate">(</span><span class="text-limestone/60">markdownString</span><span class="text-slate">);</span>
+
+<span class="text-limestone/60">console</span><span class="text-slate">.</span><span class="text-limestone/80">log</span><span class="text-slate">(</span><span class="text-limestone/60">report</span><span class="text-slate">.</span><span class="text-limestone/80">findings</span><span class="text-slate">);</span>       <span class="text-slate/30">// Finding[]</span>
+<span class="text-limestone/60">console</span><span class="text-slate">.</span><span class="text-limestone/80">log</span><span class="text-slate">(</span><span class="text-limestone/60">report</span><span class="text-slate">.</span><span class="text-limestone/80">summary</span><span class="text-slate">);</span>        <span class="text-slate/30">// { errors, warnings, info }</span>
+<span class="text-limestone/60">console</span><span class="text-slate">.</span><span class="text-limestone/80">log</span><span class="text-slate">(</span><span class="text-limestone/60">report</span><span class="text-slate">.</span><span class="text-limestone/80">designSystem</span><span class="text-slate">);</span>   <span class="text-slate/30">// Parsed DesignSystemState</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Consumer Behavior -->
+  <section class="py-24 lg:py-32">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <div class="section-rule mb-16"></div>
+      <div class="grid lg:grid-cols-12 gap-12">
+        <div class="lg:col-span-5">
+          <span class="fade-in font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta">06 — 消费者行为</span>
+          <h2 class="fade-in stagger-1 mt-4 text-3xl lg:text-4xl font-bold tracking-tighter">未知内容<br/>处理策略</h2>
+          <p class="fade-in stagger-2 mt-6 text-base text-slate leading-relaxed max-w-[40ch]">
+            DESIGN.md 消费者遇到未知内容时的标准行为定义，确保向前兼容性。
+          </p>
+        </div>
+        <div class="lg:col-span-7">
+          <div class="fade-in stagger-3 space-y-0">
+            <div class="flex items-center justify-between gap-4 py-5 border-b border-ink/[0.08] hover-row px-2">
+              <span class="text-sm font-medium shrink-0">未知章节标题</span>
+              <span class="font-grotesk text-xs text-slate px-3 py-1 bg-limestone-dark rounded-full whitespace-nowrap shrink-0">保留；不报错</span>
+            </div>
+            <div class="flex items-center justify-between gap-4 py-5 border-b border-ink/[0.08] hover-row px-2">
+              <span class="text-sm font-medium shrink-0">未知颜色令牌名称</span>
+              <span class="font-grotesk text-xs text-slate px-3 py-1 bg-limestone-dark rounded-full whitespace-nowrap shrink-0">如果值有效则接受</span>
+            </div>
+            <div class="flex items-center justify-between gap-4 py-5 border-b border-ink/[0.08] hover-row px-2">
+              <span class="text-sm font-medium shrink-0">未知排版令牌名称</span>
+              <span class="font-grotesk text-xs text-slate px-3 py-1 bg-limestone-dark rounded-full whitespace-nowrap shrink-0">作为有效排版接受</span>
+            </div>
+            <div class="flex items-center justify-between gap-4 py-5 border-b border-ink/[0.08] hover-row px-2">
+              <span class="text-sm font-medium shrink-0">未知组件属性</span>
+              <span class="font-grotesk text-xs text-terracotta px-3 py-1 bg-terracotta/[0.06] rounded-full whitespace-nowrap shrink-0">接受并警告</span>
+            </div>
+            <div class="flex items-center justify-between gap-4 py-5 hover-row px-2">
+              <span class="text-sm font-medium shrink-0">重复章节标题</span>
+              <span class="font-grotesk text-xs text-white px-3 py-1 bg-ink rounded-full whitespace-nowrap shrink-0">错误；拒绝文件</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interop -->
+  <section class="py-24 lg:py-32 bg-limestone-dark">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <div class="text-center max-w-2xl mx-auto">
+        <span class="fade-in font-grotesk text-xs font-medium tracking-[0.2em] uppercase text-terracotta">07 — 互操作性</span>
+        <h2 class="fade-in stagger-1 mt-4 text-3xl lg:text-4xl font-bold tracking-tighter">设计令牌生态</h2>
+        <p class="fade-in stagger-2 mt-6 text-base text-slate leading-relaxed">
+          受 W3C 设计令牌格式启发，DESIGN.md 令牌可无缝转换为主流格式。
+        </p>
+      </div>
+      <div class="fade-in stagger-3 mt-12 grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <div class="bg-limestone rounded-xl p-8 border border-ink/[0.04] space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-ink flex items-center justify-center">
+              <span class="font-grotesk text-limestone text-xs font-bold">TW</span>
+            </div>
+            <h3 class="font-grotesk font-semibold tracking-tight">Tailwind 主题</h3>
+          </div>
+          <p class="text-sm text-slate leading-relaxed">导出为 Tailwind CSS 主题配置，直接在项目中使用设计令牌。</p>
+          <div class="bg-ink rounded-lg px-4 py-3 overflow-x-auto">
+            <code class="text-xs text-limestone/80 whitespace-nowrap font-grotesk">export --format tailwind</code>
+          </div>
+        </div>
+        <div class="bg-limestone rounded-xl p-8 border border-ink/[0.04] space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-ink flex items-center justify-center">
+              <span class="font-grotesk text-limestone text-xs font-bold">W3</span>
+            </div>
+            <h3 class="font-grotesk font-semibold tracking-tight">DTCG 令牌</h3>
+          </div>
+          <p class="text-sm text-slate leading-relaxed">W3C 设计令牌格式模块标准，实现跨平台设计令牌互操作。</p>
+          <div class="bg-ink rounded-lg px-4 py-3 overflow-x-auto">
+            <code class="text-xs text-limestone/80 whitespace-nowrap font-grotesk">export --format dtcg</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-16 border-t border-ink/[0.06]">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+      <div class="grid sm:grid-cols-12 gap-8">
+        <div class="sm:col-span-5 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-ink rounded flex items-center justify-center">
+              <span class="font-grotesk text-limestone text-xs font-bold">D</span>
+            </div>
+            <span class="font-grotesk font-semibold text-ink tracking-tight text-sm">DESIGN.md</span>
+          </div>
+          <p class="text-sm text-slate leading-relaxed max-w-[40ch]">
+            面向编码智能体的视觉识别格式规范。当前版本：Alpha。
+          </p>
+        </div>
+        <div class="sm:col-span-3 space-y-3">
+          <span class="font-grotesk text-xs font-semibold tracking-widest uppercase text-ink">资源</span>
+          <div class="space-y-2">
+            <a href="https://github.com/google-labs-code/design.md/blob/main/docs/spec.md" class="block text-sm text-slate hover:text-ink transition-colors">完整规范</a>
+            <a href="https://github.com/google-labs-code/design.md" class="block text-sm text-slate hover:text-ink transition-colors">GitHub 仓库</a>
+            <a href="https://www.npmjs.com/package/@google/design.md" class="block text-sm text-slate hover:text-ink transition-colors">NPM 包</a>
+          </div>
+        </div>
+        <div class="sm:col-span-4 space-y-3">
+          <span class="font-grotesk text-xs font-semibold tracking-widest uppercase text-ink">相关</span>
+          <div class="space-y-2">
+            <a href="https://www.designtokens.org/" class="block text-sm text-slate hover:text-ink transition-colors">W3C 设计令牌格式</a>
+            <a href="https://tr.designtokens.org/format/" class="block text-sm text-slate hover:text-ink transition-colors">DTCG 格式模块</a>
+          </div>
+        </div>
+      </div>
+      <div class="mt-12 pt-8 border-t border-ink/[0.06] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <p class="text-xs text-slate">此项目不符合 Google 开源软件漏洞奖励计划的条件。</p>
+        <p class="font-grotesk text-xs text-slate/40">格式版本 Alpha</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Intersection Observer for fade-in animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Close mobile menu on link click
+    mobileMenu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+      });
+    });
+
+    // Smooth scroll offset for fixed nav
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', (e) => {
+        const href = anchor.getAttribute('href');
+        if (href === '#') return;
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          const offset = 80;
+          const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
 </body>
 </html>
