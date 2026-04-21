@@ -292,3 +292,7 @@ DESIGN.md 格式当前版本为 `alpha`。规范、令牌模式和 CLI 正在积
 ## 免责声明
 
 此项目不符合 [Google 开源软件漏洞奖励计划](https://bughunters.google.com/open-source-security) 的条件。
+
+---
+
+> 汉化自 [https://github.com/google-labs-code/design.md](https://github.com/google-labs-code/design.md)
